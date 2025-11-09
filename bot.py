@@ -144,9 +144,9 @@ class TetherBot:
         """
         current_time = datetime.now(TIMEZONE).strftime('%H:%M')
         return f"""⏳ به‌روزرسانی نرخ : {current_time}
-1️⃣ خرید تا 5 هزار یوآن : {base_rate + 60:,.0f}
-2️⃣ خرید تا 10 هزار یوآن : {base_rate + 50:,.0f}
-3️⃣ خرید بالای 10 هزار یوآن : {base_rate + 40:,.0f}"""
+1️⃣ خرید تا 5 هزار یوآن : {base_rate + 80:,.0f}
+2️⃣ خرید تا 10 هزار یوآن : {base_rate + 70:,.0f}
+3️⃣ خرید بالای 10 هزار یوآن : {base_rate + 60:,.0f}"""
 
 
 # ایجاد نمونه از ربات
