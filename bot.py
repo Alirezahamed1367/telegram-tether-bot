@@ -18,6 +18,7 @@ from typing import Optional, Dict
 os.environ.setdefault('TZ', 'UTC')
 
 import pytz
+import jdatetime
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import (
@@ -140,10 +141,38 @@ class TetherBot:
     
     def format_message(self, base_rate: float) -> str:
         """
-        ایجاد متن پیام نهایی
+        ایجاد متن پیام نهایی با تاریخ شمسی و میلادی
         """
-        current_time = datetime.now(TIMEZONE).strftime('%H:%M')
-        return f"""⏳ به‌روزرسانی نرخ : {current_time}
+        # زمان فعلی
+        now = datetime.now(TIMEZONE)
+        current_time = now.strftime('%H:%M')
+        
+        # تاریخ شمسی
+        j_date = jdatetime.datetime.now()
+        persian_date = j_date.strftime('%Y/%m/%d')
+        persian_day_name = j_date.strftime('%A')  # نام روز به فارسی
+        
+        # تاریخ میلادی
+        gregorian_date = now.strftime('%Y/%m/%d')
+        gregorian_day_name = now.strftime('%A')  # نام روز
+        
+        # ترجمه نام روزهای میلادی به فارسی
+        day_translation = {
+            'Saturday': 'شنبه',
+            'Sunday': 'یکشنبه',
+            'Monday': 'دوشنبه',
+            'Tuesday': 'سه‌شنبه',
+            'Wednesday': 'چهارشنبه',
+            'Thursday': 'پنج‌شنبه',
+            'Friday': 'جمعه'
+        }
+        gregorian_day_name_fa = day_translation.get(gregorian_day_name, gregorian_day_name)
+        
+        return f"""⏳ به‌روزرسانی نرخ یوآن
+📅 تاریخ شمسی: {persian_date} ({persian_day_name})
+📆 تاریخ میلادی: {gregorian_date} ({gregorian_day_name_fa})
+🕐 ساعت: {current_time}
+
 1️⃣ خرید تا 5 هزار یوآن : {base_rate + 80:,.0f}
 2️⃣ خرید تا 10 هزار یوآن : {base_rate + 70:,.0f}
 3️⃣ خرید بالای 10 هزار یوآن : {base_rate + 60:,.0f}"""
