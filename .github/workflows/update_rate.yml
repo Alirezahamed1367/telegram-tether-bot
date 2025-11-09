@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Job برای ارسال یادآوری (فقط ساعت 10:45)
+  # Job برای ارسال یادآوری (فقط ساعت 10:45 یا اجرای دستی)
   send-reminder:
     runs-on: ubuntu-latest
     if: github.event.schedule == '15 7 * * *' || github.event_name == 'workflow_dispatch'
@@ -48,10 +48,9 @@ jobs:
       run: |
         python reminder.py
 
-  # Job برای به‌روزرسانی نرخ (از 11 صبح تا 7 شب)
+  # Job برای به‌روزرسانی نرخ (همیشه اجرا می‌شود)
   update-rate:
     runs-on: ubuntu-latest
-    if: github.event.schedule != '15 7 * * *' || github.event_name == 'workflow_dispatch'
     
     steps:
     - name: Checkout repository

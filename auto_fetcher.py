@@ -8,13 +8,11 @@
 import os
 import asyncio
 import logging
-from datetime import datetime
 
 import pytz
 from dotenv import load_dotenv
-from telethon import TelegramClient
+from telethon import TelegramClient  # type: ignore
 from telegram import Bot
-from telegram.ext import Application
 
 # بارگذاری متغیرهای محیطی
 load_dotenv()
@@ -27,28 +25,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # تنظیمات Telethon (برای خواندن کانال عمومی)
-API_ID = os.getenv('TELEGRAM_API_ID')
-API_HASH = os.getenv('TELEGRAM_API_HASH')
-PHONE = os.getenv('TELEGRAM_PHONE')
+API_ID = int(os.getenv('TELEGRAM_API_ID', '0'))
+API_HASH = os.getenv('TELEGRAM_API_HASH', '')
+PHONE = os.getenv('TELEGRAM_PHONE', '')
 
 # تنظیمات Bot (برای ارسال پیام)
-BOT_TOKEN = os.getenv('BOT_TOKEN')
-TARGET_GROUP_ID = os.getenv('TARGET_GROUP_ID')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+TARGET_GROUP_ID = os.getenv('TARGET_GROUP_ID', '')
 SOURCE_CHANNEL = os.getenv('SOURCE_CHANNEL', 'tetherprice_toman')
 TIMEZONE = pytz.timezone(os.getenv('TIMEZONE', 'Asia/Tehran'))
 
 # Import از bot.py
 try:
-    from bot import bot_instance, TetherBot
+    from bot import bot_instance
 except ImportError:
     logger.error("نمی‌توان bot.py را import کرد")
     bot_instance = None
 
 
-async def read_channel_with_telethon(channel_username: str) -> str:
+async def read_channel_with_telethon(channel_username: str) -> str | None:
     """
     خواندن آخرین پیام از کانال عمومی با استفاده از Telethon
     """
+    client = None
     try:
         # ایجاد کلاینت Telethon
         client = TelegramClient('user_session', API_ID, API_HASH)
@@ -62,18 +61,25 @@ async def read_channel_with_telethon(channel_username: str) -> str:
         # دریافت آخرین پیام
         messages = await client.get_messages(channel, limit=1)
         
-        if messages and messages[0].text:
+        if messages and len(messages) > 0 and hasattr(messages[0], 'text') and messages[0].text:
             text = messages[0].text
             logger.info(f"پیام دریافت شد از @{channel_username}")
-            await client.disconnect()
+            if client:
+                await client.disconnect()
             return text
         
-        await client.disconnect()
+        if client:
+            await client.disconnect()
         logger.warning("پیامی یافت نشد")
         return None
         
     except Exception as e:
         logger.error(f"خطا در خواندن کانال با Telethon: {e}")
+        if client:
+            try:
+                await client.disconnect()
+            except:
+                pass
         return None
 
 
@@ -133,8 +139,9 @@ async def main():
         message = bot_instance.format_message(base_rate)
         
         # ارسال به گروه
-        bot = Bot(BOT_TOKEN)
-        await bot.send_message(chat_id=TARGET_GROUP_ID, text=message)
+        if BOT_TOKEN and TARGET_GROUP_ID:
+            bot = Bot(BOT_TOKEN)
+            await bot.send_message(chat_id=TARGET_GROUP_ID, text=message)
         
         logger.info("✅ پیام با موفقیت ارسال شد!")
         print("\n" + "="*50)
