@@ -12,13 +12,13 @@ import json
 import math
 import logging
 from datetime import datetime
-from typing import Optional, Dict
+from typing import Optional
 
 # تنظیم timezone برای سازگاری با Python 3.13
 os.environ.setdefault('TZ', 'UTC')
 
 import pytz
-import jdatetime
+import jdatetime  # type: ignore
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import (
